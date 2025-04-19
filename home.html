@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Analyser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom, #cadcef, #f7f7f7);
+            padding: 130px;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            padding-bottom: 40px;
+            border-radius: 15px;
+            width: 350px;
+            margin: auto;
+            box-shadow: 8px 8px 15px rgba(173, 216, 230, 0.5); /* Light blue shadow */
+        }
+        h1 {
+            color: #444c5b;
+            margin-bottom: 10px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            margin-top: 15px;
+        }
+        button {
+            background-color: #c3d4e7;
+            color: #292c30;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #94a4b4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h1>Result Analyser</h1>
+        <p>Please Select Your Role:</p>
+        <div class="container">
+            <button onclick="redirect()">Faculty</button>
+            <button onclick="redirect()">Principal</button>
+            <button onclick="redirect()">Student</button>
+            <button onclick="redirect()">Parent</button>
+        </div>
+    </div>
+
+    <script>
+        function redirect() {
+            window.location.href = "login.html"; // Currently redirects to login page
+        }
+    </script>
+
+</body>
+</html>

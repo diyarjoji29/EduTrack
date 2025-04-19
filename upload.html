@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Result - Result Analyser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom, #cadcef, #f7f7f7);
+            padding: 113px;
+            margin-top: 32px;
+            margin-bottom: 35px;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 8px 8px 15px rgba(173, 216, 230, 0.5);
+        }
+        h1 {
+            color: #444c5b;
+            margin-bottom: 10px;
+            font-size: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #c3d4e7;
+            padding: 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .upload-area:hover {
+            background-color: #f1f5f9;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #444c5b;
+        }
+        .upload-btn {
+            background: linear-gradient(to right, #89c2d9, #468faf);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .upload-btn:hover {
+            background: linear-gradient(to right, #468faf, #1b4965);
+        }
+        .success-message {
+            margin-top: 15px;
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Upload Results</h1>
+        <p>Drag & drop your PDF file here or click to browse.</p>
+        
+        <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click();">
+                <p>Drop file here or click to upload</p>
+                <input type="file" id="fileInput" name="file" accept=".pdf" onchange="validateFile()">
+            </div>
+            <p class="file-name" id="fileName"></p>
+            <button class="upload-btn" type="submit">Upload File</button>
+        </form>
+
+        <p id="successMessage" class="success-message">✅ File uploaded successfully!</p>
+    </div>
+
+    <script>
+        function validateFile() {
+            var input = document.getElementById("fileInput");
+            var fileName = document.getElementById("fileName");
+            var file = input.files[0];
+
+            if (file) {
+                var fileType = file.type;
+                if (fileType !== "application/pdf") {
+                    alert("❌ Only PDF files are allowed.");
+                    input.value = "";
+                    fileName.textContent = "";
+                } else {
+                    fileName.textContent = "Selected file: " + file.name;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
