@@ -10,7 +10,7 @@ This project uses **HTML**, **CSS**, **PHP**, **MySQL**, and **JavaScript**.
 ## 🎥 Demo
 
 Watch the demo video on Vimeo:  
-🎥 [Click to view]([https://vimeo.com/1076871367/b81999fff0](https://vimeo.com/1077092651/d54af60391?share=copy))
+🎥 [Click to view](https://vimeo.com/1077092651/d54af60391?share=copy)
 
 ---
 
