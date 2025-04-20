@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Database connection
+// Database connection (same as before)
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -9,52 +9,48 @@ $dbname = "resultanalyzer";
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) die("❌ Database Connection Failed: " . $conn->connect_error);
 
-// Get form data
+// Get form data (same as before)
 $batch = $_POST['batch'] ?? '';
 $semester = $_POST['semester'] ?? '';
 $department = $_POST['department'] ?? '';
-$category_filter = $_POST['category_filter'] ?? ''; // New category filter
+$category_filter = $_POST['category_filter'] ?? '';
 if (empty($batch) || empty($semester) || empty($department)) die("❌ Missing required fields.");
 
-// Determine table name
+// Determine table name (same as before)
 $table_name = strtolower($department) . "_s" . $semester;
 if ($conn->query("SHOW TABLES LIKE '$table_name'")->num_rows == 0) die("❌ Table $table_name does not exist.");
 
-// Fetch results
+// Fetch results (same as before)
 $batch_prefix = substr($batch, 2, 2);
 $query = "SELECT s.name, s.reg_no, s.eligible_reservation_category, r.* FROM $table_name r JOIN students s ON r.reg_no = s.reg_no WHERE r.reg_no REGEXP '^[A-Za-z]+{$batch_prefix}[A-Za-z]+[0-9]+'";
-
-// Apply category filter if selected
 if (!empty($category_filter)) {
     $query .= " AND s.eligible_reservation_category = '$category_filter'";
 }
-
 $result = $conn->query($query);
 
-// Fetch grading system
+// Fetch grading system (same as before)
 $grades = [];
 $res = $conn->query("SELECT grade, grade_point FROM grading_system");
 while ($row = $res->fetch_assoc()) $grades[$row['grade']] = $row['grade_point'];
 
-// Fetch subject credits
+// Fetch subject credits (same as before)
 $credits = [];
 $res = $conn->query("SELECT subject_code, credits FROM subjects");
 while ($row = $res->fetch_assoc()) $credits[$row['subject_code']] = $row['credits'];
 
-// Fetch subject details (code, name, credits)
+// Fetch subject details (code, name) for the tooltip
 $subject_details = [];
-$res = $conn->query("SELECT subject_code, subject_name, credits FROM subjects");
-while ($row = $res->fetch_assoc()) {
-    $credits[$row['subject_code']] = $row['credits']; // Keep existing credits array
-    $subject_details[$row['subject_code']] = $row['subject_name']; // Store subject name
+$res_subjects = $conn->query("SELECT subject_code, subject_name FROM subjects");
+while ($row = $res_subjects->fetch_assoc()) {
+    $subject_details[$row['subject_code']] = $row['subject_name'];
 }
 
-// Process data
+// Process data (same as before)
 $rows = $result->fetch_all(MYSQLI_ASSOC);
 $columns = array_keys($rows[0] ?? []);
 $valid_columns = ["name"];
 $subject_grades = [];
-foreach ($columns as $col) if ($col !== "name" && $col !== "reg_no" && $col !== "eligible_reservation_category") { // Excluding reg_no and category
+foreach ($columns as $col) if ($col !== "name" && $col !== "reg_no" && $col !== "eligible_reservation_category") {
     if (array_filter(array_column($rows, $col), fn($v) => !is_null($v))) {
         $valid_columns[] = $col;
         foreach ($rows as $row) {
@@ -73,11 +69,12 @@ function calculate_cgpa($row, $grades, $credits) {
     return $total_credits ? "<b>" . round($total_score / $total_credits, 2) . "</b>" : '<b>--</b>';
 }
 
-// Find Topper (Highest CGPA)
+// Find Topper (Highest CGPA) (same as before)
 $topper = null;
 $max_cgpa = 0;
+$topper_grades = [];
 foreach ($rows as $row) {
-    $cgpa = floatval(strip_tags(calculate_cgpa($row, $grades, $credits))); // Remove <b> tags for comparison
+    $cgpa = floatval(strip_tags(calculate_cgpa($row, $grades, $credits)));
     if ($cgpa > $max_cgpa) {
         $max_cgpa = $cgpa;
         $topper = [
@@ -86,11 +83,10 @@ foreach ($rows as $row) {
             "cgpa" => $cgpa
         ];
         foreach ($row as $subject => $grade) if (isset($grades[$grade])) $topper_grades[$subject] = $grades[$grade];
-
     }
 }
 
-// Fetch distinct categories for dropdown
+// Fetch distinct categories for dropdown (same as before)
 $categories = [];
 $cat_result = $conn->query("SELECT DISTINCT eligible_reservation_category FROM students");
 while ($row = $cat_result->fetch_assoc()) {
@@ -114,10 +110,38 @@ while ($row = $cat_result->fetch_assoc()) {
         .content { display: none; }
         .content.active { display: block; }
         h1 { font-size: 22px; color: rgba(18, 17, 17, 0.8); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; cursor: pointer; } /* Added cursor: pointer for visual feedback */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; cursor: pointer; position: relative; } /* Added position: relative for tooltip positioning */
         th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
         th { background-color: #c3d4e7; font-size: 13px; }
         td:first-child { text-align: left; width: 200px; }
+
+        /* Tooltip Styles */
+        .cell-content { /* Container for cell content and tooltip */
+            position: relative;
+            display: inline-block; /* Ensures tooltip is positioned relative to this */
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            opacity: 0;
+            bottom: 120%; /* Position above the cell-content */
+            left: 50%;
+            transform: translateX(-50%);
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        td:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
 
         /* Improved Topper Section */
         .topper-container {
@@ -245,7 +269,15 @@ while ($row = $cat_result->fetch_assoc()) {
                 <tr>
                     <th>NAME</th>
                     <th>REG NO</th>
-                    <?php foreach ($valid_columns as $col) if ($col !== "name" && $col !== "reg_no") echo "<th>" . strtoupper($col) . "</th>"; ?>
+                    <?php foreach ($valid_columns as $col) {
+                        if ($col !== "name" && $col !== "reg_no") {
+                            echo "<th>" . strtoupper($col);
+                            if (isset($subject_details[$col])) {
+                                echo "<div class='tooltip'>" . htmlspecialchars( $subject_details[$col]) . "</div>";
+                            }
+                            echo "</th>";
+                        }
+                    } ?>
                 </tr>
             </thead>
             <tbody>
@@ -255,9 +287,17 @@ while ($row = $cat_result->fetch_assoc()) {
                         <td><?php echo $row['reg_no']; ?></td>
                         <?php foreach ($valid_columns as $col) {
                             if ($col !== "name" && $col !== "reg_no") {
-                                echo "<td>" . ($col == "CGPA" ? calculate_cgpa($row, $grades, $credits) : ($row[$col] ?? '-')) . "</td>";
+                                echo "<td>";
+                                echo "<div class='cell-content'>";
+                                echo ($col == "CGPA" ? calculate_cgpa($row, $grades, $credits) : ($row[$col] ?? '-'));
+                                if ($col != "CGPA" && isset($subject_details[$col])) {
+                                    echo "<div class='tooltip'>" . htmlspecialchars($subject_details[$col]) . "</div>";
+                                }
+                                echo "</div>";
+                                echo "</td>";
                             }
                         } ?>
+
                     </tr>
                 <?php } ?>
             </tbody>
@@ -265,45 +305,44 @@ while ($row = $cat_result->fetch_assoc()) {
     </div>
 
         <div id="graph-view" class="content">
+            <?php if ($topper) { ?>
+                <div class="topper-container">
+                    <div class="topper-content">
+                        <div class="topper-info">
+                            <img src="https://i.im.ge/2025/03/31/p6a7pK.sbcf-default-avatar.png" alt="Topper Profile" class="topper-img">
+                            <h3>Topper: <?php echo $topper["name"]; ?></h3>
+                            <p><b>Reg No:</b> <?php echo $topper["reg_no"]; ?></p>
+                            <p><b>CGPA:</b> <?php echo $topper["cgpa"]; ?></p>
+                        </div>
 
-    <?php if ($topper) { ?>
-        <div class="topper-container">
-            <div class="topper-content">
-                <div class="topper-info">
-                    <img src="https://i.im.ge/2025/03/31/p6a7pK.sbcf-default-avatar.png" alt="Topper Profile" class="topper-img">
-                    <h3>Topper: <?php echo $topper["name"]; ?></h3>
-                    <p><b>Reg No:</b> <?php echo $topper["reg_no"]; ?></p>
-                    <p><b>CGPA:</b> <?php echo $topper["cgpa"]; ?></p>
+                        <div class="topper-chart">
+                            <canvas id="topperChart"></canvas>
+                        </div>
+                    </div>
+
+                    <script>
+                        var ctx = document.getElementById('topperChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: <?php echo json_encode(array_keys($topper_grades)); ?>,
+                                datasets: [{
+                                    label: 'Grade Points',
+                                    data: <?php echo json_encode(array_values($topper_grades)); ?>,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                                }]
+                            },
+                            options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
+                        });
+                    </script>
                 </div>
+            <?php } ?>
 
-                <div class="topper-chart">
-                    <canvas id="topperChart"></canvas>
-                </div>
-            </div>
-
-            <script>
-                var ctx = document.getElementById('topperChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: <?php echo json_encode(array_keys($topper_grades)); ?>,
-                        datasets: [{
-                            label: 'Grade Points',
-                            data: <?php echo json_encode(array_values($topper_grades)); ?>,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                        }]
-                    },
-                    options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
-                });
-            </script>
-        </div>
-    <?php } ?>
-
-        <h2>Grade Distribution</h2>
+            <h2>Grade Distribution</h2>
             <div class="graph-container">
                 <?php foreach ($subject_grades as $subject => $data) {
                     $subject_name = $subject_details[$subject] ?? 'Unknown Subject';
-                ?>
+                    ?>
                     <div class="graph-box">
                         <h3><?php echo "$subject - $subject_name"; ?></h3>
                         <canvas id="chart-<?php echo $subject; ?>"></canvas>
