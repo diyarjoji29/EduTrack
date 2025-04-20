@@ -162,13 +162,30 @@ $sgpa = !empty($valid_semesters) ? round(array_sum($valid_semesters) / count($va
             height: 100%;
             overflow-y: auto;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: -13px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+        .back-button img {
+            width: 30px;
+            height: 30px;
+        }
+        .back-button.hover{
+            background:rgb(121, 171, 225);
+        }
         .profile-img {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             background: #ddd;
             display: block;
-            margin: 10px auto;
+            margin: 20px auto 10px;
         }
         .student-info {
             font-size: 14px;
@@ -203,6 +220,9 @@ $sgpa = !empty($valid_semesters) ? round(array_sum($valid_semesters) / count($va
 <body>
 
     <div class="sidebar">
+        <button class="back-button" onclick="window.location.href='facprinclogin.html'">
+            <img src="https://i.im.ge/2025/04/20/vuPXKY.arrow-7.png" alt="Back" style="width: 24px; height: 24px;">
+        </button>
         <div class="profile-img">
             <img src="https://i.im.ge/2025/03/31/p6a7pK.sbcf-default-avatar.png" alt="Profile Picture" style="width:100px; height:100px; border-radius:50%;">
         </div>
@@ -226,9 +246,7 @@ $sgpa = !empty($valid_semesters) ? round(array_sum($valid_semesters) / count($va
             <canvas id="cgpaChart"></canvas>
         </div>
 
-        <form action="logout.php" method="post">
-            <button type="submit">Logout</button>
-        </form>
+        
     </div>
 
     <div class="main-content">
