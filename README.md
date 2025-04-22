@@ -53,13 +53,15 @@ composer install
 ---
 ## 🔧 How to Run the Project
 
-1. Download or clone this repository.
-2. Copy all the files into the `htdocs` folder (if using XAMPP).
-3. Start **Apache** and **MySQL** from the XAMPP control panel.
-4. Import the database `.sql` file into MySQL using phpMyAdmin.
+1. Download or clone this repository.  
+2. Copy all the files into the `htdocs` folder (if using XAMPP).  
+3. Start **Apache** and **MySQL** from the XAMPP control panel.  
+4. Import the database `.sql` file into MySQL using phpMyAdmin.  
 5. Open your browser and go to:  
    `http://localhost/index.html`
 
+  
+> ⚠️ **Note**: The database is set up locally via **XAMPP**. Backend functionality (e.g., login, data parsing, analysis) will **only work on a local server**.
 
 ---
 ## 🔑 Features
